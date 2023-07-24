@@ -110,7 +110,6 @@ class AddressBook(UserDict):
             raise StopIteration
 
     
-    
     def save_to_file(self, filename):
         self.filename = filename
         with open(self.filename, "wb") as f:
@@ -122,17 +121,17 @@ class AddressBook(UserDict):
 
     
     
-    def search_contact(self, search_items):
-        search_items =["l","i","b"]
+    def search_contact(self, search_item):
+        # search_items =["l","i","b"]
+        result = []
         for record in self.data.values():
-            for search_letter in search_items:
-                if search_letter.lower() in search_items:
-                    return f"Contact {record} is found"
-
-        return "No contacts found"
+            # for search_letter in search_items:
+            # if search_letter.lower() in search_items:
+            if search_item.lower() in str(record).lower():
+                result.append(record)
+        # return f"Contact {record} is found"
+        return "\n".join(str(rec) for rec in result) if result else "No contacts found"
     
 
-
-    
     def __str__(self) -> str:
         return "\n".join(str(r) for r in self.data.values())
