@@ -49,6 +49,8 @@ def change(*args):
         return rec.edit_phone(old_phone, new_phone)
 
     return f"No contact {name} in addressbook."
+
+
 @handle_errors
 def phone(*args):
     search_items = ["l","i","b"]
@@ -62,20 +64,22 @@ def phone(*args):
     return result
 
 
-    
+def find_command(*args):
+    if len(args[0]) < 3:
+        return "Enter at least three characters to search"
+    return address_book.search_contact(args[0])
 
 @handle_errors
 def show_all(*args):
-    search_items = ["l","i","b"]
-    result = address_book.search_contact(search_items)
-    if result == "Contact found":
-        all_contacts = ""
-        for record in address_book.values():
-            all_contacts += f"{record.name}"
-        return all_contacts
-    else:
-        return result
-
+    # search_items = ["l","i","b"]
+    # result = address_book.search_contact(search_items)
+    # if result == "Contact found":
+    #     all_contacts = ""
+    #     for record in address_book.values():
+    #         all_contacts += f"{record.name}"
+    #     return all_contacts
+    # else:
+    return address_book
 
 
 @handle_errors
@@ -88,7 +92,8 @@ COMMANDS = {add: ("add",),
             phone: ("phone",),
             show_all: ("show all",),
             greeting: ("hello", "hi"),
-            exit_command: ("good bye", "exit")
+            exit_command: ("good bye", "exit"),
+            find_command: ("search", "find"),
             }
 
 
@@ -98,7 +103,6 @@ def parser(text: str) -> tuple[callable, tuple[str] | None]:
             if text.lower().startswith(kwd):
                 data = text[len(kwd):].strip().split()
                 return cmd, data
-
     return no_command, []
 
 
