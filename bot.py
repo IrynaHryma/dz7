@@ -49,32 +49,28 @@ def change(*args):
         return rec.edit_phone(old_phone, new_phone)
 
     return f"No contact {name} in addressbook."
+
+
 @handle_errors
 def phone(*args):
-    search_items = ["l","i","b"]
-    result = address_book.search_contact(search_items)
-    if result == "Contact found":
-        name = Name(args[0])
-        if name in address_book[name]:
-            contact = address_book[name]
-            phones_str = ', '.join(str(phone) for phone in contact.phones)
-            return f"Phone numbers for {name}: {phones_str}"
-    return result
+    name = Name(args[0])
+    if str(name) in address_book.data:
+        contact = address_book.data[str(name)]
+        phones_str = ', '.join(str(phone) for phone in contact.phones)
+        return f"Phone numbers for {name}: {phones_str}"
+    return "Contact not found"
 
 
-    
+@handle_errors
+def find_command(*args):
+    if len(args[0]) < 3:
+        return "Enter at leaset three characters to seartch"
+    return address_book.search_contact(args[0])
+
 
 @handle_errors
 def show_all(*args):
-    search_items = ["l","i","b"]
-    result = address_book.search_contact(search_items)
-    if result == "Contact found":
-        all_contacts = ""
-        for record in address_book.values():
-            all_contacts += f"{record.name}"
-        return all_contacts
-    else:
-        return result
+    return address_book
 
 
 
@@ -88,7 +84,8 @@ COMMANDS = {add: ("add",),
             phone: ("phone",),
             show_all: ("show all",),
             greeting: ("hello", "hi"),
-            exit_command: ("good bye", "exit")
+            exit_command: ("good bye", "exit"),
+            find_command: ('search', 'find'),
             }
 
 
@@ -103,14 +100,21 @@ def parser(text: str) -> tuple[callable, tuple[str] | None]:
 
 
 def main():
+    try:
+        address_book.read_from_file("Address_book")
+
+    except FileNotFoundError:
+        print ("File not found. Start the address_book")
+
     while True:
         user_input = input(">>>>")
         command, data = parser(user_input)
         result = command(*data)
         print(result)
-
+        
         if command == exit_command:
-            break
+           address_book.save_to_file("Address_book") 
+           break
 
 
 if __name__ == "__main__":

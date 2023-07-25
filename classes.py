@@ -109,30 +109,24 @@ class AddressBook(UserDict):
         else:
             raise StopIteration
 
-    
-    
     def save_to_file(self, filename):
-        self.filename = filename
-        with open(self.filename, "wb") as f:
-            pickle.dumps(self, f)
+        with open(filename, "wb") as f:
+            pickle.dump(self.data, f)
 
-    def read_from_file(self):
-        with open(self.filename, "rb") as f:
-            return pickle.loads(f)
-
+    def read_from_file(self,filename):
+        try:
+            with open(filename, "rb") as f:
+                self.data = pickle.load(f)
+        except (FileNotFoundError,EOFError):
+            self.data = {}
     
-    
-    def search_contact(self, search_items):
-        search_items =["l","i","b"]
+    def search_contact(self, search_item):
+        result = []
         for record in self.data.values():
-            for search_letter in search_items:
-                if search_letter.lower() in search_items:
-                    return f"Contact {record} is found"
+            if search_item.lower() in str(record).lower():
+                result.append(record)
 
-        return "No contacts found"
-    
+        return "\n".join(str(rec) for rec in result) if result else "Contact not found"
 
-
-    
     def __str__(self) -> str:
         return "\n".join(str(r) for r in self.data.values())
