@@ -62,7 +62,7 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name: Name, phone: Phone = None, birthday=None):
+    def __init__(self, name: Name, phone: Phone = None, birthday:Birthday=None):
         self.name = name
         self.phones = []
         self.birthday = birthday

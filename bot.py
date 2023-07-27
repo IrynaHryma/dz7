@@ -1,4 +1,4 @@
-from classes import AddressBook, Name, Phone, Record
+from classes import AddressBook, Name, Phone, Record, Birthday
 
 
 address_book = AddressBook()
@@ -21,10 +21,11 @@ def handle_errors(func):
 def add(*args):
     name = Name(args[0])
     phone = Phone(args[1])
+    birthday = Birthday(args[2]) if len(args) > 2 else None
     rec: Record = address_book.get(str(name))
     if rec:
         return rec.add_phone(phone)
-    rec = Record(name, phone)
+    rec = Record(name, phone, birthday)
     address_book.add_record(rec)
     return "Contact added successfully."
 
@@ -73,6 +74,19 @@ def show_all(*args):
     return address_book
 
 
+@handle_errors
+def birthday_greeting(*args):
+    name = Name(args[0])
+    rec: Record = address_book.get(str(name))
+    if rec:
+        greeting = rec.days_to_birthday()
+        if greeting:
+           return greeting
+        else:
+           return f"No  birthday today for {name}"
+        
+    else:
+       return f"No contact with name{name} found"
 
 @handle_errors
 def no_command(*args):
@@ -84,8 +98,9 @@ COMMANDS = {add: ("add",),
             phone: ("phone",),
             show_all: ("show all",),
             greeting: ("hello", "hi"),
-            exit_command: ("good bye", "exit"),
-            find_command: ('search', 'find'),
+            exit_command: ("finish", "exit","end"),
+            find_command: ('search', 'find',),
+            birthday_greeting: ("birthday",),
             }
 
 
@@ -104,17 +119,17 @@ def main():
         address_book.read_from_file("Address_book")
 
     except FileNotFoundError:
-        print ("File not found. Start the address_book")
+        print("File not found. Start the address_book")
 
     while True:
         user_input = input(">>>>")
         command, data = parser(user_input)
         result = command(*data)
         print(result)
-        
+
         if command == exit_command:
-           address_book.save_to_file("Address_book") 
-           break
+            address_book.save_to_file("Address_book")
+            break
 
 
 if __name__ == "__main__":
