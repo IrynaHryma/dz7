@@ -1,7 +1,7 @@
-from classes import AddressBook, Name, Phone, Record, Birthday
+import classes
 
 
-address_book = AddressBook()
+address_book = classes.AddressBook()
 
 
 def handle_errors(func):
@@ -14,18 +14,22 @@ def handle_errors(func):
             return "Invalid input. Please enter a valid name and phone number"
         except IndexError:
             return "Invalid input. please try again"
+
     return wrapper
 
 
 @handle_errors
 def add(*args):
-    name = Name(args[0])
-    phone = Phone(args[1])
-    birthday = Birthday(args[2]) if len(args) > 2 else None
-    rec: Record = address_book.get(str(name))
+    name = classes.Name(args[0])
+    phone = classes.Phone(args[1])
+    birthday = classes.Birthday(args[2]) if len(args) > 2 else None
+    address = classes.Address(
+        street=args[3], city=args[4], country=args[5], zipcode=args[6])
+    email = classes.Email(args[7])
+    rec: classes.Record = address_book.get(str(name))
     if rec:
         return rec.add_phone(phone)
-    rec = Record(name, phone, birthday)
+    rec = classes.Record(name, phone, birthday, address, email)
     address_book.add_record(rec)
     return "Contact added successfully."
 
@@ -35,6 +39,9 @@ def greeting(*text):
     return "How can I help you?"
 
 
+# exit
+
+
 @handle_errors
 def exit_command(*args):
     return "See you soon"
@@ -42,10 +49,10 @@ def exit_command(*args):
 
 @handle_errors
 def change(*args):
-    name = Name(args[0])
-    old_phone = Phone(args[1])
-    new_phone = Phone(args[2])
-    rec: Record = address_book.get(str(name))
+    name = classes.Name(args[0])
+    old_phone = classes.Phone(args[1])
+    new_phone = classes.Phone(args[2])
+    rec: classes.Record = address_book.get(str(name))
     if rec:
         return rec.edit_phone(old_phone, new_phone)
 
@@ -54,7 +61,7 @@ def change(*args):
 
 @handle_errors
 def phone(*args):
-    name = Name(args[0])
+    name = classes.Name(args[0])
     if str(name) in address_book.data:
         contact = address_book.data[str(name)]
         phones_str = ', '.join(str(phone) for phone in contact.phones)
@@ -76,17 +83,34 @@ def show_all(*args):
 
 @handle_errors
 def birthday_greeting(*args):
-    name = Name(args[0])
-    rec: Record = address_book.get(str(name))
+    name = classes.Name(args[0])
+    rec: classes.Record = address_book.get(str(name))
     if rec:
         greeting = rec.days_to_birthday()
         if greeting:
-           return greeting
+            return greeting
         else:
-           return f"No  birthday today for {name}"
-        
+            return f"No  birthday today for {name}"
+
     else:
-       return f"No contact with name{name} found"
+        return f"No contact with name{name} found"
+
+
+@handle_errors
+def address(*args):
+    name = classes.Name(args[0])
+    rec: classes.Record = address_book.get(str(name))
+    if rec:
+        return f"Address  for {name}: {rec.address}."
+
+
+@handle_errors
+def email(*args):
+    name = classes.Name(args[0])
+    rec: classes.Record = address_book.get(str(name))
+    if rec:
+        return f"Email for {name}: {rec.email}"
+
 
 @handle_errors
 def no_command(*args):
@@ -98,9 +122,11 @@ COMMANDS = {add: ("add",),
             phone: ("phone",),
             show_all: ("show all",),
             greeting: ("hello", "hi"),
-            exit_command: ("finish", "exit","end"),
+            exit_command: ("finish", "exit", "end"),
             find_command: ('search', 'find',),
             birthday_greeting: ("birthday",),
+            address: ("address",),
+            email: ("email"),
             }
 
 
