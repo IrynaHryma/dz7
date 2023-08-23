@@ -1,6 +1,7 @@
 from collections import UserDict
 from datetime import datetime
 import pickle
+import re
 
 
 class Field:
@@ -28,9 +29,51 @@ class Name(Field):
     pass
 
 
+class Address():
+    def __init__(self, street="", city="", country="", zipcode="") -> None:
+        self.street = street
+        self.country = country
+        self.city = city
+        self.zipcode = zipcode
+
+    def __str__(self) -> str:
+        return f"{self.street},{self.city},{self.country},{self.zipcode}"
+
+    def __repr__(self) -> str:
+        return str(self)
+
+
+class Email:
+    def __init__(self, value="") -> None:
+        self.value = value
+
+    @staticmethod
+    def email_validation(email):
+        match = re.search(
+            r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email)
+        return bool(match)
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        if self.email_validation(val):
+            self._value = val
+
+        else:
+            raise ValueError("Invalid email")
+
+
 class Birthday(Field):
     def __init__(self, value):
         super().__init__(value)
+
+    @staticmethod
+    def birthday_validation(date):
+        datetime.strptime(str(date), '%d/%m/%Y')
+        return bool(date)
 
     @property
     def value(self):
@@ -38,9 +81,9 @@ class Birthday(Field):
 
     @value.setter
     def value(self, new_value):
-        try:
-            self._value = datetime.strptime(new_value, '%d/%m/%Y').date()
-        except ValueError:
+        if self.birthday_validation(new_value):
+            self._value = new_value
+        else:
             raise ValueError("Date is not valid")
 
 
@@ -62,13 +105,21 @@ class Phone(Field):
 
 
 class Record:
-    def __init__(self, name: Name, phone: Phone = None, birthday:Birthday=None):
+    def __init__(self, name: Name, phone: Phone = None, birthday=None, address=None, email=None):
         self.name = name
         self.phones = []
         self.birthday = birthday
+        self.address = address
+        self.email = email
 
         if phone:
             self.phones.append(phone)
+
+    def __str__(self) -> str:
+        phones = ", ".join([str(phone) for phone in self.phones])
+        birthday = f"Birthday:{self.birthday}" if self.birthday.value else " "
+        address = f"Address:{self.address}" if self.address else " "
+        email = f"Email : {self.email}" if self.email else " "
 
     def add_phone(self, phone: Phone):
         if phone.value not in (p.value for p in self.phones):
@@ -88,6 +139,8 @@ class Record:
         current_day = datetime.now()
         if self.birthday and current_day.month == self.birthday.value.month and current_day.day == self.birthday.value.day:
             return f"Happy birthday to {self.name}."
+        else:
+            return ""
 
     def __str__(self) -> str:
         return f"{self.name}: {', '.join(str(p) for p in self.phones)}"
@@ -113,13 +166,13 @@ class AddressBook(UserDict):
         with open(filename, "wb") as f:
             pickle.dump(self.data, f)
 
-    def read_from_file(self,filename):
+    def read_from_file(self, filename):
         try:
             with open(filename, "rb") as f:
                 self.data = pickle.load(f)
-        except (FileNotFoundError,EOFError):
+        except (FileNotFoundError, EOFError):
             self.data = {}
-    
+
     def search_contact(self, search_item):
         result = []
         for record in self.data.values():
